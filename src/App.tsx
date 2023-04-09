@@ -87,11 +87,84 @@ function App() {
     }
   };
 
+  // Function to update the title of a note
+  const updateNoteTitle = ({
+    target: { value },
+  }: {
+    target: { value: string };
+  }) => {
+    // Update the title of the active note in the notes array
+    notes.splice(active, 1, { title: value, content: content });
+    // Update the title state variable
+    setTitle(value);
+    // Update the notes array in local storage
+    setNotes([...notes]);
+  };
+
+  const updateNoteContent = ({
+    target: { value },
+  }: {
+    target: { value: string };
+  }) => {
+    // Update the content of the active note in the notes array
+    notes.splice(active, 1, { title: title, content: value });
+    // Update the content state variable
+    setContent(value);
+    // Update the notes array in local storage
+    setNotes([...notes]);
+  };
+
+  // Function to export notes to a JSON file
+  const exportNotes = async () => {
+    // Convert the notes array to a JSON string
+    const exportedNotes = JSON.stringify(notes);
+
+    // Use the save function from the Tauri API to prompt the user to select a file location to save the notes
+    const filePath = await save({
+      filters: [
+        {
+          name: 'JSON',
+          extensions: ['json'],
+        },
+      ],
+    });
+
+    // Write the JSON string to the selected file location
+    await writeTextFile(`${filePath}`, exportedNotes);
+
+    // Send a notification to the user confirming that the notes have been saved
+    sendNotification(
+      `Your notes have been successfully saved in ${filePath} file.`
+    );
+  };
+
+  // Function to import notes from a JSON file
+  const importNotes = async () => {
+
+    // Use the open function from the Tauri API to prompt the user to select a JSON file to import
+    const selectedFile = await open({
+      filters: [
+        {
+          name: 'JSON',
+          extensions: ['json'],
+        },
+      ],
+    });
+
+    // Read the contents of the selected file
+    const fileContent = await readTextFile(`${selectedFile}`);
+
+    // Parse the JSON string into an array of notes
+    const importedNotes = JSON.parse(fileContent);
+
+    // Update the notes array in local storage with the imported notes
+    setNotes(importedNotes);
+  };
+
   // Render the main App component
   return (
     <div>
       <Grid grow m={10}>
-
         {/* Left column */}
         <Grid.Col span="auto">
           {/* Header section with app title and buttons */}
@@ -112,10 +185,18 @@ function App() {
               Add note
             </Button>
             <Button.Group>
-              <Button variant="light" leftIcon={<IconFileArrowLeft />}>
+              <Button
+                variant="light"
+                onClick={importNotes}
+                leftIcon={<IconFileArrowLeft />}
+              >
                 Import
               </Button>
-              <Button variant="light" leftIcon={<IconFileArrowRight />}>
+              <Button
+                variant="light"
+                onClick={exportNotes}
+                leftIcon={<IconFileArrowRight />}
+              >
                 Export
               </Button>
             </Button.Group>
@@ -155,8 +236,12 @@ function App() {
           {/* Render the editor or preview*/}
           {checked === false && (
             <div>
-              <TextInput mb={5} />
-              <Textarea minRows={10} />
+              <TextInput value={title} onChange={updateNoteTitle} mb={5} />
+              <Textarea
+                value={content}
+                onChange={updateNoteContent}
+                minRows={10}
+              />
             </div>
           )}
           {checked && (
