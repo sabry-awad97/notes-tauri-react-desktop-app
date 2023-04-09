@@ -12,10 +12,21 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true
+      "dialog": {
+        "save": true,
+        "open": true,
+        "ask": true
+      },
+      "fs": {
+        "writeFile": true,
+        "readFile": true,
+        "scope": ["$DOCUMENT/*", "$DESKTOP/*"]
+      },
+      "path": {
+        "all": true
+      },
+      "notification": {
+        "all": true
       }
     },
     "bundle": {
@@ -27,7 +38,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "com.notes.dev",
       "targets": "all"
     },
     "security": {
@@ -39,11 +50,10 @@
     "windows": [
       {
         "fullscreen": false,
+        "height": 600,
         "resizable": true,
-        "alwaysOnTop": true,
-        "title": "tauri-app",
-        "width": 800,
-        "height": 600
+        "title": "Notes",
+        "width": 800
       }
     ]
   }
